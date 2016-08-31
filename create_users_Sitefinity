@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Security;
+using Telerik.Sitefinity.Security;
+using Telerik.Sitefinity.Security.Model;
+
+namespace Telerik.Sitefinity.Documentation.CodeSnippets.DeepDive.Security.Users
+{
+    public partial class ManagingUsersSnippets
+    {
+        public static MembershipCreateStatus CreateUser(string username, string password, string firstName, string lastName, string mail, string secretQuestion, string secretAnswer, bool isApproved)
+        {
+            UserManager userManager = UserManager.GetManager();
+            UserProfileManager profileManager = UserProfileManager.GetManager();
+
+            System.Web.Security.MembershipCreateStatus status;
+
+            User user = userManager.CreateUser(username, password, mail, secretQuestion, secretAnswer, isApproved, null, out status);
+
+            if (status == MembershipCreateStatus.Success)
+            {
+                SitefinityProfile sfProfile = profileManager.CreateProfile(user, Guid.NewGuid(), typeof(SitefinityProfile)) as SitefinityProfile;
+
+                if (sfProfile != null)
+                {
+                    sfProfile.FirstName = firstName;
+                    sfProfile.LastName = lastName;
+                }
+
+                userManager.SaveChanges();
+                profileManager.RecompileItemUrls(sfProfile);
+                profileManager.SaveChanges();
+            
+            }
+
+            return status;
+        }
+    }
+}
